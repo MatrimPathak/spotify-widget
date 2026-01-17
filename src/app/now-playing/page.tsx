@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Vibrant } from "node-vibrant/browser";
+import Image from "next/image";
 
 interface Artist {
 	name: string;
@@ -123,7 +124,7 @@ export default function NowPlayingPage() {
 		<div className="flex w-fit text-white">
 			{hideAlbumArt && (
 				<div className="relative w-32 h-32 rounded-full mr-5 overflow-hidden">
-					<img
+					<Image
 						src={item.album.images[0].url}
 						alt={item.name}
 						className="w-32 h-32 rounded-full animate-spin"
