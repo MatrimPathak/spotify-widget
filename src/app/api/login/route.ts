@@ -30,8 +30,8 @@ export async function GET(request: Request) {
 		redirectUri: redirect_uri,
 	});
 
-	const state = "some_random_state"; // For production, generate a secure random state.
-	const authorizeURL = spotifyApi.createAuthorizeURL(scopes, state);
+	const state = "spotify-widget"; // For production, generate a secure random state.
+	const authorizeURL = spotifyApi.createAuthorizeURL(scopes, state, true);
 
 	// Set cookies with the credentials so the callback can use them
 	const response = NextResponse.redirect(authorizeURL);
