@@ -123,42 +123,45 @@ export default function NowPlayingPage() {
 	return (
 		<div className="flex items-center gap-8 p-6 select-none">
 			{/* Vinyl Record Section */}
-			<div className="relative group perspective-1000">
-				{/* The Disk (behind the sleeve) */}
-				<div 
-					className={`absolute left-4 top-2 w-32 h-32 rounded-full vinyl-disk transition-all duration-700 ease-out z-0
-						${trackData.is_playing ? "translate-x-16 animate-spin-slow" : "translate-x-0 animate-spin-slow-paused"}
-						after:content-[''] after:absolute after:inset-0 after:rounded-full after:vinyl-shine
-					`}
-				>
-					{/* Record Label */}
-					<div className="absolute inset-[38%] rounded-full border border-black/20 overflow-hidden bg-black/40">
-						<Image
-							src={item.album.images[0].url}
-							alt="Label"
-							fill
-							className="object-cover opacity-80"
-						/>
-						<div className="absolute inset-0 flex items-center justify-center">
-							<div className="w-2 h-2 bg-[#121212] rounded-full border border-white/10" />
+			{hideAlbumArt && (
+				<div className="relative group perspective-1000">
+					{/* The Disk (behind the sleeve) */}
+					<div 
+						className={`absolute left-4 top-2 w-32 h-32 rounded-full vinyl-disk transition-all duration-700 ease-out z-0
+							${trackData.is_playing ? "translate-x-16 animate-spin-slow" : "translate-x-0 animate-spin-slow-paused"}
+							after:content-[''] after:absolute after:inset-0 after:rounded-full after:vinyl-shine
+						`}
+					>
+						{/* Record Label */}
+						<div className="absolute inset-[38%] rounded-full border border-black/20 overflow-hidden bg-black/40">
+							<Image
+								src={item.album.images[0].url}
+								alt="Label"
+								fill
+								className="object-cover opacity-80"
+							/>
+							<div className="absolute inset-0 flex items-center justify-center">
+								<div className="w-2 h-2 bg-[#121212] rounded-full border border-white/10" />
+							</div>
 						</div>
 					</div>
-				</div>
 
-				{/* The Sleeve (Album Art) */}
-				<div className="relative w-40 h-40 shadow-2xl z-20 rounded-sm overflow-hidden transform group-hover:scale-[1.02] transition-transform duration-300">
-					<Image
-						src={item.album.images[0].url}
-						alt={item.name}
-						fill
-						className="object-cover"
-						priority
-					/>
-					<div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+					{/* The Sleeve (Album Art) */}
+					<div className="relative w-40 h-40 shadow-2xl z-20 rounded-sm overflow-hidden transform group-hover:scale-[1.02] transition-transform duration-300">
+						<Image
+							src={item.album.images[0].url}
+							alt={item.name}
+							fill
+							className="object-cover"
+							priority
+						/>
+						<div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+					</div>
 				</div>
-			</div>
+			)}
 
 			{/* Info Section */}
+
 			<div className="flex flex-col gap-3 min-w-[320px] max-w-[400px]">
 				<div className="glass rounded-2xl p-6 relative overflow-hidden">
 					{/* Animated background glow based on theme color */}
