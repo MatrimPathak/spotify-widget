@@ -121,68 +121,94 @@ export default function NowPlayingPage() {
 	}
 
 	return (
-		<div className="flex w-fit text-white">
-			{hideAlbumArt && (
-				<div className="relative w-32 h-32 rounded-full mr-5 overflow-hidden">
+		<div className="flex items-center gap-8 p-6 select-none">
+			{/* Vinyl Record Section */}
+			<div className="relative group perspective-1000">
+				{/* The Disk (behind the sleeve) */}
+				<div 
+					className={`absolute left-4 top-2 w-32 h-32 rounded-full vinyl-disk transition-all duration-700 ease-out z-0
+						${trackData.is_playing ? "translate-x-16 animate-spin-slow" : "translate-x-0 animate-spin-slow-paused"}
+						after:content-[''] after:absolute after:inset-0 after:rounded-full after:vinyl-shine
+					`}
+				>
+					{/* Record Label */}
+					<div className="absolute inset-[38%] rounded-full border border-black/20 overflow-hidden bg-black/40">
+						<Image
+							src={item.album.images[0].url}
+							alt="Label"
+							fill
+							className="object-cover opacity-80"
+						/>
+						<div className="absolute inset-0 flex items-center justify-center">
+							<div className="w-2 h-2 bg-[#121212] rounded-full border border-white/10" />
+						</div>
+					</div>
+				</div>
+
+				{/* The Sleeve (Album Art) */}
+				<div className="relative w-40 h-40 shadow-2xl z-20 rounded-sm overflow-hidden transform group-hover:scale-[1.02] transition-transform duration-300">
 					<Image
 						src={item.album.images[0].url}
 						alt={item.name}
-						className="w-32 h-32 rounded-full animate-spin"
-						style={{
-							border: `4px solid ${themeColor}`,
-							animationDuration: "3s",
-						}}
+						fill
+						className="object-cover"
+						priority
 					/>
-					<div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-						<div className="size-4 bg-white rounded-full border-4 border-black" />
-					</div>
+					<div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
 				</div>
-			)}
-			<div className="relative">
-				<div
-					className="absolute h-32 w-96 rounded-lg"
-					style={{
-						backgroundImage: `url(${item.album.images[0].url})`,
-						backgroundSize: "cover",
-						backgroundPosition: "center",
-					}}
-				>
-					<div className="backdrop-blur-md h-32 w-96 rounded-lg bg-black/30"></div>
-				</div>
-				<div className="px-4 py-2 rounded-lg w-96 relative z-10">
-					<p className="text-lg font-semibold">{item.name}</p>
-					<p
-						className="text-md font-medium text-ellipsis"
-						style={{ color: hexToRgba(themeColor, 1) }}
-					>
-						{artistNames}
-					</p>
-					<p className="text-sm font-normal">{item.album.name}</p>
-					<div className="flex items-center mt-2">
-						<p
-							className="text-sm font-normal mr-2"
-							style={{ color: hexToRgba(themeColor, 1) }}
-						>
-							{formatTime(progress)}
-						</p>
-						<div className="w-full bg-gray-200 rounded-full h-1 m-2">
-							<div
-								className="h-1 rounded-full"
-								style={{
-									backgroundColor: hexToRgba(themeColor, 1),
-									width: `${progressPercent}%`,
-								}}
-							></div>
+			</div>
+
+			{/* Info Section */}
+			<div className="flex flex-col gap-3 min-w-[320px] max-w-[400px]">
+				<div className="glass rounded-2xl p-6 relative overflow-hidden">
+					{/* Animated background glow based on theme color */}
+					<div 
+						className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[80px] opacity-40 transition-colors duration-1000"
+						style={{ backgroundColor: themeColor }}
+					/>
+
+					<div className="relative z-10 flex flex-col gap-1">
+						<h1 className="text-2xl font-bold text-white tracking-tight line-clamp-1">
+							{item.name}
+						</h1>
+						<div className="flex items-center gap-2">
+							<p 
+								className="text-sm font-medium tracking-wide uppercase opacity-90 line-clamp-1"
+								style={{ color: themeColor }}
+							>
+								{artistNames}
+							</p>
+							<span className="text-white/30 truncate">•</span>
+							<p className="text-xs font-semibold text-white/50 tracking-widest uppercase truncate max-w-[120px]">
+								{item.album.name}
+							</p>
 						</div>
-						<p
-							className="text-sm font-norma ml-2"
-							style={{ color: hexToRgba(themeColor, 1) }}
-						>
-							{formatTime(item.duration_ms)}
-						</p>
+					</div>
+
+					{/* Progress Section */}
+					<div className="mt-6 flex flex-col gap-2 relative z-10">
+						<div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+							<div
+								className="h-full rounded-full transition-all duration-1000 ease-linear"
+								style={{
+									backgroundColor: themeColor,
+									width: `${progressPercent}%`,
+									boxShadow: `0 0 12px ${hexToRgba(themeColor, 0.5)}`
+								}}
+							/>
+						</div>
+						<div className="flex justify-between items-center px-0.5">
+							<span className="text-[10px] font-bold text-white/40 tabular-nums tracking-wider uppercase">
+								{formatTime(progress)}
+							</span>
+							<span className="text-[10px] font-bold text-white/40 tabular-nums tracking-wider uppercase">
+								{formatTime(item.duration_ms)}
+							</span>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	);
 }
+
