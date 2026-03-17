@@ -1,14 +1,10 @@
 // src/app/api/callback/route.ts
 import { NextResponse } from "next/server";
 import spotifyApi from "@/app/lib/spotify";
-import SpotifyWebApi from "spotify-web-api-node";
-
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
 	const code = searchParams.get("code");
 	const error = searchParams.get("error");
-	const state = searchParams.get("state");
-
 	if (error) {
 		console.error("Spotify callback error:", error);
 		return NextResponse.json({ error }, { status: 400 });
@@ -23,7 +19,7 @@ export async function GET(request: Request) {
 
 	try {
 		const data = await spotifyApi.authorizationCodeGrant(code);
-		const { access_token, refresh_token, expires_in } = data.body;
+		const { access_token, refresh_token } = data.body;
 		// const { access_token, refresh_token } = data.body;
 
 		// Set tokens on the shared Spotify API client
