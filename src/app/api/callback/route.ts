@@ -1,6 +1,7 @@
 // src/app/api/callback/route.ts
 import { NextResponse } from "next/server";
 import spotifyApi from "@/app/lib/spotify";
+import SpotifyWebApi from "spotify-web-api-node";
 
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
