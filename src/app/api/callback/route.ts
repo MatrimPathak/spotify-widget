@@ -1,10 +1,22 @@
 // src/app/api/callback/route.ts
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import spotifyApi from "@/app/lib/spotify";
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
 	const code = searchParams.get("code");
 	const error = searchParams.get("error");
+
+	const cookieStore = await cookies();
+	const clientId = cookieStore.get("client_id")?.value;
+	const clientSecret = cookieStore.get("client_secret")?.value;
+	const redirectUri = cookieStore.get("redirect_uri")?.value;
+
+	if (clientId && clientSecret && redirectUri) {
+		spotifyApi.setClientId(clientId);
+		spotifyApi.setClientSecret(clientSecret);
+		spotifyApi.setRedirectURI(redirectUri);
+	}
 	if (error) {
 		console.error("Spotify callback error:", error);
 		return NextResponse.json({ error }, { status: 400 });
