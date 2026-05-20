@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useSearchParams } from "next/navigation";
 import { Vibrant } from "node-vibrant/browser";
 import Image from "next/image";
 
@@ -30,12 +29,12 @@ function EqualizerBars({ isPlaying, color }: { isPlaying: boolean; color: string
     "eq4 0.65s ease-in-out infinite alternate",
   ];
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", height: "14px" }}>
+    <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", height: "12px" }}>
       {anims.map((anim, i) => (
         <div
           key={i}
           style={{
-            width: "3px",
+            width: "2px",
             borderRadius: "2px",
             backgroundColor: color,
             height: isPlaying ? undefined : "3px",
@@ -47,10 +46,7 @@ function EqualizerBars({ isPlaying, color }: { isPlaying: boolean; color: string
   );
 }
 
-export default function NowPlayingBar() {
-  const searchParams = useSearchParams();
-  const showAlbumArt = searchParams.get("hideAlbumArt")?.toLowerCase() !== "true";
-
+export default function NowPlayingCard() {
   const [trackData, setTrackData] = useState<NowPlayingResponse | null>(null);
   const [localProgress, setLocalProgress] = useState(0);
   const [themeColor, setThemeColor] = useState("#1db954");
@@ -77,7 +73,6 @@ export default function NowPlayingBar() {
     return () => clearInterval(interval);
   }, []);
 
-  // Smooth local progress interpolation
   useEffect(() => {
     const tick = setInterval(() => {
       if (isPlayingRef.current) setLocalProgress((p) => p + 100);
@@ -85,7 +80,6 @@ export default function NowPlayingBar() {
     return () => clearInterval(tick);
   }, []);
 
-  // Extract colors only when track changes
   useEffect(() => {
     if (trackData?.item && trackData.item.id !== lastTrackIdRef.current) {
       lastTrackIdRef.current = trackData.item.id;
@@ -114,107 +108,87 @@ export default function NowPlayingBar() {
   if (!trackData?.item) return <div />;
 
   const { item, is_playing: isPlaying } = trackData;
-  const artists = item.artists.slice(0, 3).map((a) => a.name).join(", ");
+  const artists = item.artists.slice(0, 2).map((a) => a.name).join(", ");
   const pct = Math.min((localProgress / item.duration_ms) * 100, 100);
 
   return (
     <div className="flex items-start justify-start min-h-screen bg-transparent p-4">
       <div
-        className="relative flex items-center gap-3 px-4 py-3 rounded-2xl overflow-hidden select-none"
+        className="relative w-[220px] h-[220px] rounded-2xl overflow-hidden select-none"
         style={{
-          width: "400px",
-          background: `linear-gradient(135deg, ${rgba(darkColor, 0.97)}, ${rgba(darkColor, 0.90)})`,
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          border: `1px solid ${rgba(themeColor, 0.2)}`,
-          boxShadow: `0 8px 32px ${rgba(darkColor, 0.7)}, inset 0 1px 0 ${rgba(themeColor, 0.08)}`,
+          boxShadow: `0 24px 64px ${rgba(darkColor, 0.85)}, 0 0 0 1px ${rgba(themeColor, 0.25)}`,
         }}
       >
-        {/* Left color accent */}
-        <div
-          className="absolute left-0 top-4 bottom-4 w-[3px] rounded-full transition-colors duration-1000"
-          style={{ backgroundColor: themeColor }}
+        {/* Album art fills the entire card */}
+        <Image
+          src={item.album.images[0].url}
+          alt={item.name}
+          fill
+          unoptimized
+          className="object-cover"
+          priority
         />
 
-        {/* Ambient glow */}
-        <div
-          className="absolute -right-12 -top-12 w-40 h-40 rounded-full blur-3xl opacity-20 pointer-events-none transition-colors duration-1000"
-          style={{ backgroundColor: themeColor }}
-        />
-
-        {/* Album art */}
-        {showAlbumArt && (
-          <div
-            className="relative shrink-0 w-[68px] h-[68px] rounded-xl overflow-hidden ml-2"
-            style={{ boxShadow: `0 4px 16px ${rgba(darkColor, 0.8)}` }}
+        {/* Now playing / paused badge — top right */}
+        <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1.5 rounded-full px-2.5 py-1 backdrop-blur-md"
+          style={{ backgroundColor: rgba(darkColor, 0.65) }}
+        >
+          <EqualizerBars isPlaying={isPlaying} color={themeColor} />
+          <span
+            className="text-[8px] font-black tracking-[0.18em] uppercase transition-colors duration-1000"
+            style={{ color: themeColor }}
           >
-            <Image
-              src={item.album.images[0].url}
-              alt={item.name}
-              fill
-              unoptimized
-              className="object-cover"
-              priority
-            />
-            {!isPlaying && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <div className="flex gap-[3px]">
-                  <div className="w-[3px] h-3.5 bg-white/90 rounded-full" />
-                  <div className="w-[3px] h-3.5 bg-white/90 rounded-full" />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+            {isPlaying ? "Live" : "Paused"}
+          </span>
+        </div>
 
-        {/* Info */}
-        <div className="flex flex-col gap-0.5 flex-1 min-w-0 pr-1">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <EqualizerBars isPlaying={isPlaying} color={themeColor} />
-            <span
-              className="text-[9px] font-black tracking-[0.2em] uppercase transition-colors duration-1000"
-              style={{ color: themeColor }}
-            >
-              {isPlaying ? "Now Playing" : "Paused"}
-            </span>
-          </div>
+        {/* Bottom gradient overlay */}
+        <div
+          className="absolute inset-0 z-10 pointer-events-none"
+          style={{
+            background: `linear-gradient(to bottom, transparent 25%, ${rgba(darkColor, 0.88)} 75%, ${rgba(darkColor, 0.98)} 100%)`,
+          }}
+        />
 
-          <h1 className="text-white text-[13px] font-black truncate leading-tight tracking-tight">
-            {item.name}
-          </h1>
+        {/* Ambient color tint top */}
+        <div
+          className="absolute inset-0 z-10 pointer-events-none opacity-20 transition-colors duration-1000"
+          style={{ background: `radial-gradient(circle at 50% 0%, ${themeColor}, transparent 70%)` }}
+        />
 
-          <div className="flex items-center gap-1 min-w-0">
-            <span
-              className="text-[11px] font-semibold truncate transition-colors duration-1000"
-              style={{ color: themeColor }}
-            >
-              {artists}
-            </span>
-            <span className="text-white/25 text-[11px] shrink-0">•</span>
-            <span className="text-white/40 text-[11px] truncate">{item.album.name}</span>
-          </div>
-
-          {/* Progress */}
-          <div className="mt-2 flex flex-col gap-1">
-            <div className="w-full bg-white/10 rounded-full h-[3px] overflow-hidden">
+        {/* Info section overlaid at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 px-3.5 pb-3.5 pt-10">
+          {/* Progress bar */}
+          <div className="flex flex-col gap-1 mb-2.5">
+            <div className="w-full bg-white/15 rounded-full overflow-hidden" style={{ height: "2px" }}>
               <div
                 className="h-full rounded-full"
                 style={{
                   width: `${pct}%`,
                   backgroundColor: themeColor,
-                  boxShadow: `0 0 6px ${rgba(themeColor, 0.7)}`,
+                  boxShadow: `0 0 6px ${rgba(themeColor, 0.9)}`,
                   transition: "width 100ms linear",
                 }}
               />
             </div>
             <div className="flex justify-between">
-              <span className="text-[9px] text-white/35 tabular-nums font-bold tracking-wider">
-                {fmt(localProgress)}
-              </span>
-              <span className="text-[9px] text-white/35 tabular-nums font-bold tracking-wider">
-                {fmt(item.duration_ms)}
-              </span>
+              <span className="text-[8px] text-white/45 tabular-nums font-bold">{fmt(localProgress)}</span>
+              <span className="text-[8px] text-white/45 tabular-nums font-bold">{fmt(item.duration_ms)}</span>
             </div>
+          </div>
+
+          <h1 className="text-white text-[13px] font-black truncate leading-tight tracking-tight">
+            {item.name}
+          </h1>
+          <div className="flex items-center gap-1 mt-0.5 min-w-0">
+            <span
+              className="text-[10px] font-semibold truncate transition-colors duration-1000"
+              style={{ color: themeColor }}
+            >
+              {artists}
+            </span>
+            <span className="text-white/30 text-[9px] shrink-0">•</span>
+            <span className="text-white/40 text-[10px] truncate">{item.album.name}</span>
           </div>
         </div>
       </div>
