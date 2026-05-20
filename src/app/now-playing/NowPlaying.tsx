@@ -1,221 +1,149 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Vibrant } from "node-vibrant/browser";
 import Image from "next/image";
 
-interface Artist {
-	name: string;
-}
-
-interface AlbumImage {
-	url: string;
-}
-
-interface Album {
-	images: AlbumImage[];
-	name: string;
-}
-
 interface Track {
-	id: string;
-	name: string;
-	artists: Artist[];
-	album: Album;
-	duration_ms: number;
+  id: string; name: string;
+  artists: { name: string }[];
+  album: { images: { url: string }[]; name: string };
+  duration_ms: number;
 }
-
 interface NowPlayingResponse {
-	item: Track | null;
-	progress_ms: number;
-	is_playing: boolean;
+  item: Track | null; progress_ms: number; is_playing: boolean; error?: string;
 }
 
-export default function NowPlayingPage() {
-	const searchParams = useSearchParams();
-	// If the URL param hideAlbumArt is "false" (ignoring case), then album art will be hidden; defaults to true.
-	const hideAlbumArt =
-		searchParams.get("hideAlbumArt")?.toLowerCase() !== "true";
-
-	const [trackData, setTrackData] = useState<NowPlayingResponse | null>(null);
-	const [progress, setProgress] = useState<number>(0);
-	const [themeColor, setThemeColor] = useState<string>("#000"); // default background
-
-	const fetchNowPlaying = async () => {
-		try {
-			const res = await fetch("/api/now-playing");
-			const data: NowPlayingResponse = await res.json();
-			setTrackData(data);
-			if (data.progress_ms) {
-				setProgress(data.progress_ms);
-			}
-		} catch (err) {
-			console.error("Error fetching now playing:", err);
-		}
-	};
-
-	useEffect(() => {
-		fetchNowPlaying();
-		const interval = setInterval(fetchNowPlaying, 1000);
-		return () => clearInterval(interval);
-	}, []);
-
-	// Extract dominant color from the album art when trackData updates.
-	useEffect(() => {
-		if (trackData && trackData.item && trackData.is_playing) {
-			const imgUrl = trackData.item.album.images[0].url;
-			Vibrant.from(imgUrl)
-				.getPalette()
-				.then((palette) => {
-					const dominantColor = palette.Vibrant?.hex || "#1f2937";
-					setThemeColor(dominantColor);
-				})
-				.catch((err) => {
-					console.error("Error extracting color:", err);
-					setThemeColor("#1f2937");
-				});
-		}
-	}, [trackData]);
-
-	const formatTime = (ms: number): string => {
-		const minutes = Math.floor(ms / 60000);
-		const seconds = Math.floor((ms % 60000) / 1000);
-		return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-	};
-
-	// If no track is playing or the song is paused, show a message.
-	if (!trackData || !trackData.item || !trackData.is_playing) {
-		return (
-			<div className="flex text-white min-h-screen">
-				<div className="w-32 h-32 rounded-full bg-gray-900 mr-5"></div>
-				<div className="h-32 w-96 bg-gray-900 rounded-lg flex items-center justify-center">
-					<p className="text-center text-lg font-semibold">
-						No Song is playing currently
-					</p>
-				</div>
-			</div>
-		);
-	}
-
-	const item = trackData.item;
-	const artistNames = item.artists
-		.slice(0, 3)
-		.map((artist) => artist.name)
-		.join(", ");
-	const progressPercent = (progress / item.duration_ms) * 100;
-
-	// Helper to convert hex to RGBA with a given opacity.
-	function hexToRgba(hex: string, opacity: number): string {
-		hex = hex.replace("#", "");
-		if (hex.length === 3) {
-			hex = hex
-				.split("")
-				.map((char) => char + char)
-				.join("");
-		}
-		const r = parseInt(hex.substring(0, 2), 16);
-		const g = parseInt(hex.substring(2, 4), 16);
-		const b = parseInt(hex.substring(4, 6), 16);
-		return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-	}
-
-	return (
-		<div className="flex items-center justify-center min-h-[250px] w-full p-8 select-none bg-[#0a0a0a] rounded-[2rem] overflow-hidden">
-			<div className="flex items-center gap-10">
-				{/* Vinyl Record Section */}
-				{hideAlbumArt && (
-					<div className="relative group perspective-1000 shrink-0">
-						{/* The Disk (behind the sleeve) */}
-						<div 
-							className={`absolute left-4 top-2 w-36 h-36 rounded-full vinyl-disk transition-all duration-700 ease-out z-0
-								${trackData.is_playing ? "translate-x-20 animate-spin-slow" : "translate-x-0 animate-spin-slow-paused"}
-								after:content-[''] after:absolute after:inset-0 after:rounded-full after:vinyl-shine
-							`}
-						>
-							{/* Record Label */}
-							<div className="absolute inset-[38%] rounded-full border border-black/20 overflow-hidden bg-black/40">
-								<Image
-									src={item.album.images[0].url}
-									alt="Label"
-									fill
-									unoptimized
-									className="object-cover opacity-80"
-								/>
-								<div className="absolute inset-0 flex items-center justify-center">
-									<div className="w-2.5 h-2.5 bg-[#121212] rounded-full border border-white/10" />
-								</div>
-							</div>
-						</div>
-
-						{/* The Sleeve (Album Art) */}
-						<div className="relative w-44 h-44 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-20 rounded-md overflow-hidden transform group-hover:scale-[1.02] transition-transform duration-300">
-							<Image
-								src={item.album.images[0].url}
-								alt={item.name}
-								fill
-								unoptimized
-								className="object-cover"
-								priority
-							/>
-							<div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-						</div>
-					</div>
-				)}
-
-				{/* Info Section */}
-				<div className="flex flex-col gap-4 min-w-[340px] max-w-[450px]">
-					<div className="glass rounded-[2.5rem] p-8 relative overflow-hidden">
-						{/* Animated background glow based on theme color */}
-						<div 
-							className="absolute -top-32 -right-32 w-64 h-64 rounded-full blur-[100px] opacity-30 transition-colors duration-1000"
-							style={{ backgroundColor: themeColor }}
-						/>
-
-						<div className="relative z-10 flex flex-col gap-1.5">
-							<h1 className="text-2xl font-black text-white tracking-tight line-clamp-1 leading-tight">
-								{item.name}
-							</h1>
-							<div className="flex items-center gap-2.5">
-								<p 
-									className="text-sm font-bold tracking-wider uppercase opacity-100 line-clamp-1"
-									style={{ color: themeColor }}
-								>
-									{artistNames}
-								</p>
-								<span className="text-white/20">•</span>
-								<p className="text-xs font-bold text-white/40 tracking-[0.2em] uppercase truncate max-w-[140px]">
-									{item.album.name}
-								</p>
-							</div>
-						</div>
-
-						{/* Progress Section */}
-						<div className="mt-8 flex flex-col gap-3 relative z-10">
-							<div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
-								<div
-									className="h-full rounded-full transition-all duration-1000 ease-linear shadow-[0_0_15px_rgba(0,0,0,1)]"
-									style={{
-										backgroundColor: themeColor,
-										width: `${progressPercent}%`,
-										boxShadow: `0 0 20px ${hexToRgba(themeColor, 0.4)}`
-									}}
-								/>
-							</div>
-							<div className="flex justify-between items-center px-1">
-								<span className="text-[11px] font-black text-white/30 tabular-nums tracking-widest uppercase">
-									{formatTime(progress)}
-								</span>
-								<span className="text-[11px] font-black text-white/30 tabular-nums tracking-widest uppercase">
-									{formatTime(item.duration_ms)}
-								</span>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	);
+function EqualizerBars({ isPlaying, color }: { isPlaying: boolean; color: string }) {
+  const anims = ["eq1 0.70s","eq2 0.90s","eq3 0.80s","eq4 0.65s"];
+  return (
+    <div style={{ display:"flex", alignItems:"flex-end", gap:"2px", height:"14px" }}>
+      {anims.map((a, i) => (
+        <div key={i} style={{
+          width:"3px", borderRadius:"2px", backgroundColor: color,
+          height: isPlaying ? undefined : "3px",
+          animation: isPlaying ? `${a}s ease-in-out infinite alternate` : "none",
+        }} />
+      ))}
+    </div>
+  );
 }
 
+export default function NowPlayingBar() {
+  const searchParams = useSearchParams();
+  const showAlbumArt = searchParams.get("hideAlbumArt")?.toLowerCase() !== "true";
+  const hidePaused   = searchParams.get("hidePaused")?.toLowerCase() === "true";
 
+  const [trackData, setTrackData]   = useState<NowPlayingResponse | null>(null);
+  const [localProgress, setLocalProgress] = useState(0);
+  const [themeColor, setThemeColor] = useState("#1db954");
+  const [darkColor,  setDarkColor]  = useState("#0a1628");
+  const lastTrackIdRef = useRef<string | null>(null);
+  const isPlayingRef   = useRef(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch("/api/now-playing");
+        if (!res.ok) return;
+        const data: NowPlayingResponse = await res.json();
+        if (data.error) return;
+        setTrackData(data);
+        if (typeof data.progress_ms === "number") setLocalProgress(data.progress_ms);
+        isPlayingRef.current = data.is_playing;
+      } catch {}
+    };
+    load(); const iv = setInterval(load, 4000); return () => clearInterval(iv);
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => { if (isPlayingRef.current) setLocalProgress(p => p + 100); }, 100);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    if (trackData?.item && trackData.item.id !== lastTrackIdRef.current) {
+      lastTrackIdRef.current = trackData.item.id;
+      Vibrant.from(trackData.item.album.images[0].url).getPalette()
+        .then(p => { setThemeColor(p.Vibrant?.hex ?? "#1db954"); setDarkColor(p.DarkVibrant?.hex ?? "#0a1628"); })
+        .catch(() => {});
+    }
+  }, [trackData]);
+
+  const fmt = (ms: number) => { const m = Math.floor(ms/60000), s = Math.floor((ms%60000)/1000); return `${m}:${s<10?"0":""}${s}`; };
+  const rgba = (hex: string, a: number) => { hex=hex.replace("#",""); if(hex.length===3)hex=hex.split("").map(c=>c+c).join(""); return `rgba(${parseInt(hex.slice(0,2),16)},${parseInt(hex.slice(2,4),16)},${parseInt(hex.slice(4,6),16)},${a})`; };
+
+  if (!trackData?.item) return <div />;
+  if (!trackData.is_playing && hidePaused) return <div />;
+
+  const { item, is_playing: isPlaying } = trackData;
+  const artists = item.artists.slice(0,3).map(a=>a.name).join(", ");
+  const pct = Math.min((localProgress / item.duration_ms) * 100, 100);
+
+  return (
+    <div className="flex items-start justify-start min-h-screen bg-transparent p-4">
+      <div
+        className="relative flex items-center gap-3 px-4 py-3 rounded-2xl overflow-hidden select-none"
+        style={{
+          width:"400px",
+          background:`linear-gradient(135deg, ${rgba(darkColor,0.97)}, ${rgba(darkColor,0.90)})`,
+          backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)",
+          border:`1px solid ${rgba(themeColor, isPlaying ? 0.2 : 0.08)}`,
+          boxShadow:`0 8px 32px ${rgba(darkColor,0.7)}, inset 0 1px 0 ${rgba(themeColor,0.08)}`,
+          opacity: isPlaying ? 1 : 0.75,
+          transition:"opacity 0.6s ease, border-color 0.6s ease",
+        }}
+      >
+        <div className="absolute left-0 top-4 bottom-4 w-[3px] rounded-full transition-colors duration-1000"
+          style={{ backgroundColor: isPlaying ? themeColor : rgba(themeColor, 0.3) }} />
+        <div className="absolute -right-12 -top-12 w-40 h-40 rounded-full blur-3xl pointer-events-none transition-all duration-1000"
+          style={{ backgroundColor: themeColor, opacity: isPlaying ? 0.2 : 0.06 }} />
+
+        {showAlbumArt && (
+          <div className="relative shrink-0 w-[68px] h-[68px] rounded-xl overflow-hidden ml-2"
+            style={{ boxShadow:`0 4px 16px ${rgba(darkColor,0.8)}`, filter: isPlaying ? "none" : "saturate(0.4)" }}>
+            <Image src={item.album.images[0].url} alt={item.name} fill unoptimized className="object-cover" priority />
+            {!isPlaying && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <div className="flex gap-[3px]">
+                  <div className="w-[3px] h-3.5 bg-white/90 rounded-full" />
+                  <div className="w-[3px] h-3.5 bg-white/90 rounded-full" />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="flex flex-col gap-0.5 flex-1 min-w-0 pr-1">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <EqualizerBars isPlaying={isPlaying} color={themeColor} />
+            <span className="text-[9px] font-black tracking-[0.2em] uppercase transition-colors duration-1000"
+              style={{ color: isPlaying ? themeColor : rgba(themeColor, 0.5) }}>
+              {isPlaying ? "Now Playing" : "Paused"}
+            </span>
+          </div>
+          <h1 className="text-white text-[13px] font-black truncate leading-tight tracking-tight">{item.name}</h1>
+          <div className="flex items-center gap-1 min-w-0">
+            <span className="text-[11px] font-semibold truncate transition-colors duration-1000"
+              style={{ color: isPlaying ? themeColor : rgba(themeColor, 0.5) }}>{artists}</span>
+            <span className="text-white/25 text-[11px] shrink-0">•</span>
+            <span className="text-white/40 text-[11px] truncate">{item.album.name}</span>
+          </div>
+          <div className="mt-2 flex flex-col gap-1">
+            <div className="w-full bg-white/10 rounded-full h-[3px] overflow-hidden">
+              <div className="h-full rounded-full"
+                style={{ width:`${pct}%`, backgroundColor: isPlaying ? themeColor : rgba(themeColor,0.4),
+                  boxShadow: isPlaying ? `0 0 6px ${rgba(themeColor,0.7)}` : "none",
+                  transition:"width 100ms linear" }} />
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[9px] text-white/35 tabular-nums font-bold tracking-wider">{fmt(localProgress)}</span>
+              <span className="text-[9px] text-white/35 tabular-nums font-bold tracking-wider">{fmt(item.duration_ms)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

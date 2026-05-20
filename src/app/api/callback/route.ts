@@ -32,7 +32,6 @@ export async function GET(request: Request) {
 	try {
 		const data = await spotifyApi.authorizationCodeGrant(code);
 		const { access_token, refresh_token } = data.body;
-		// const { access_token, refresh_token } = data.body;
 
 		// Set tokens on the shared Spotify API client
 		spotifyApi.setAccessToken(access_token);

@@ -64,3 +64,20 @@
   animation: spin-slow 8s linear infinite;
   animation-play-state: paused;
 }
+
+@keyframes eq1 { from { height: 3px; } to { height: 13px; } }
+@keyframes eq2 { from { height: 12px; } to { height: 4px; } }
+@keyframes eq3 { from { height: 5px; } to { height: 14px; } }
+@keyframes eq4 { from { height: 11px; } to { height: 3px; } }
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes crt-flicker {
+  0%, 90%, 100% { opacity: 1; }
+  93%  { opacity: 0.92; }
+  95%  { opacity: 0.97; }
+  97%  { opacity: 0.89; }
+}
