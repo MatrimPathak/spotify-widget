@@ -5,11 +5,18 @@ export default function HomePage() {
 	return (
 		<main className="flex flex-col items-center justify-center min-h-screen text-white bg-neutral-700">
 			<h1 className="text-4xl font-bold mb-8">Spotify Widget</h1>
-			<Link href="/login" prefetch={false}>
-				<span className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg text-lg font-semibold cursor-pointer">
-					Enter Your Spotify Credentials
-				</span>
-			</Link>
+			<div className="flex flex-col gap-4 items-center">
+				<Link href="/login" prefetch={false}>
+					<span className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg text-lg font-semibold cursor-pointer block">
+						Enter Your Spotify Credentials
+					</span>
+				</Link>
+				<Link href="/settings" prefetch={false}>
+					<span className="px-6 py-3 bg-neutral-600 hover:bg-neutral-500 rounded-lg text-lg font-semibold cursor-pointer block">
+						Widget Settings
+					</span>
+				</Link>
+			</div>
 		</main>
 	);
 }
