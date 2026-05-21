@@ -1,11 +1,13 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { useNowPlaying } from "@/app/lib/useNowPlaying";
+import { useWidgetConfig } from "@/app/lib/useWidgetConfig";
 
 export default function NowPlayingVU() {
   const searchParams = useSearchParams();
   const hidePaused = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const { trackData, localProgress, themeColor, fmt, rgba } = useNowPlaying();
+  const cfg = useWidgetConfig();
 
   if (!trackData?.item) return <div />;
   if (!trackData.is_playing && hidePaused) return <div />;
@@ -31,16 +33,17 @@ export default function NowPlayingVU() {
     >
       {barAnims.map((bar,i) => {
         const frac = (i+1)/barAnims.length;
-        // When paused: all bars grey at minimum height
-        const barColor = isPlaying
+        const showAnim = isPlaying && cfg.visualizer;
+        // When paused or visualizer off: all bars grey at minimum height
+        const barColor = showAnim
           ? (frac < 0.6 ? "#1db954" : frac < 0.85 ? "#f59e0b" : "#ef4444")
           : "rgba(80,80,80,0.4)";
         return (
           <div key={i} style={{
             flex:1, borderRadius:"2px", backgroundColor: barColor,
-            height: isPlaying ? undefined : "3px",
-            animation: isPlaying ? `${bar.anim}s ease-in-out infinite alternate` : "none",
-            maxHeight: isPlaying ? bar.max : "3px",
+            height: showAnim ? undefined : "3px",
+            animation: showAnim ? `${bar.anim}s ease-in-out infinite alternate` : "none",
+            maxHeight: showAnim ? bar.max : "3px",
             minHeight:"3px", alignSelf:"flex-end",
             transition:"background-color 0.5s",
           }} />
@@ -53,7 +56,7 @@ export default function NowPlayingVU() {
     <div className="flex items-start justify-start min-h-screen bg-transparent p-4">
       <div className="relative flex items-center gap-3 px-4 py-3 select-none overflow-hidden transition-opacity duration-700"
         style={{
-          width:"400px", borderRadius:"8px",
+          width:"400px", borderRadius: cfg.radius !== null ? cfg.radius + "px" : "8px",
           background:"linear-gradient(180deg, #1c1c1c 0%, #141414 100%)",
           border:"1px solid rgba(255,255,255,0.06)",
           boxShadow:"0 8px 32px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)",

@@ -2,11 +2,13 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useNowPlaying } from "@/app/lib/useNowPlaying";
+import { useWidgetConfig } from "@/app/lib/useWidgetConfig";
 
 export default function NowPlayingNotification() {
   const searchParams = useSearchParams();
   const hidePaused = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const { trackData, localProgress, themeColor, darkColor, fmt, rgba } = useNowPlaying();
+  const cfg = useWidgetConfig();
 
   if (!trackData?.item) return <div />;
   if (!trackData.is_playing && hidePaused) return <div />;
@@ -19,9 +21,9 @@ export default function NowPlayingNotification() {
     <div className="flex items-start justify-start min-h-screen bg-transparent p-4">
       <div className="relative select-none overflow-hidden transition-all duration-700"
         style={{
-          width:"320px", borderRadius:"20px",
+          width:"320px", borderRadius: cfg.radius !== null ? cfg.radius + "px" : "20px",
           background: rgba(darkColor, 0.92),
-          backdropFilter:"blur(40px)", WebkitBackdropFilter:"blur(40px)",
+          backdropFilter:"blur(" + (cfg.blur ?? 40) + "px)", WebkitBackdropFilter:"blur(" + (cfg.blur ?? 40) + "px)",
           border:`1px solid ${isPlaying ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)"}`,
           boxShadow:"0 12px 40px rgba(0,0,0,0.5)",
           opacity: isPlaying ? 1 : 0.72,

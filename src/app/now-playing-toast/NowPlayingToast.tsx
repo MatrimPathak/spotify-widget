@@ -2,11 +2,13 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useNowPlaying } from "@/app/lib/useNowPlaying";
+import { useWidgetConfig } from "@/app/lib/useWidgetConfig";
 
 export default function NowPlayingToast() {
   const searchParams = useSearchParams();
   const hidePaused = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const { trackData, localProgress, themeColor, fmt, rgba } = useNowPlaying();
+  const cfg = useWidgetConfig();
 
   if (!trackData?.item) return <div />;
   if (!trackData.is_playing && hidePaused) return <div />;
@@ -21,8 +23,9 @@ export default function NowPlayingToast() {
         className="relative flex items-center gap-2.5 px-2.5 py-2 rounded-full overflow-hidden select-none transition-all duration-700"
         style={{
           width:"300px",
+          borderRadius: cfg.radius !== null ? cfg.radius + "px" : "9999px",
           background: rgba(themeColor, isPlaying ? 0.12 : 0.05),
-          backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)",
+          backdropFilter:"blur(" + (cfg.blur ?? 20) + "px)", WebkitBackdropFilter:"blur(" + (cfg.blur ?? 20) + "px)",
           border:`1px solid ${rgba(themeColor, isPlaying ? 0.3 : 0.12)}`,
           boxShadow:`0 4px 24px ${rgba(themeColor, isPlaying ? 0.15 : 0.04)}`,
           opacity: isPlaying ? 1 : 0.7,
@@ -52,7 +55,7 @@ export default function NowPlayingToast() {
 
         {/* Right indicator */}
         <div className="shrink-0 flex items-center gap-[2px] h-4 mr-1">
-          {isPlaying ? (
+          {cfg.visualizer && isPlaying ? (
             [0.7, 0.9, 0.75, 0.85].map((dur, i) => (
               <div key={i} style={{
                 width:"2px", borderRadius:"1px", backgroundColor: themeColor,

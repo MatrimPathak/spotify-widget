@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Vibrant } from "node-vibrant/browser";
 import Image from "next/image";
+import { useWidgetConfig } from "@/app/lib/useWidgetConfig";
 
 interface Track {
   id: string; name: string;
@@ -34,6 +35,8 @@ export default function NowPlayingBar() {
   const searchParams = useSearchParams();
   const showAlbumArt = searchParams.get("hideAlbumArt")?.toLowerCase() !== "true";
   const hidePaused   = searchParams.get("hidePaused")?.toLowerCase() === "true";
+  const accentParam  = searchParams.get("accentColor");
+  const cfg = useWidgetConfig();
 
   const [trackData, setTrackData]   = useState<NowPlayingResponse | null>(null);
   const [localProgress, setLocalProgress] = useState(0);
@@ -80,25 +83,27 @@ export default function NowPlayingBar() {
   const { item, is_playing: isPlaying } = trackData;
   const artists = item.artists.slice(0,3).map(a=>a.name).join(", ");
   const pct = Math.min((localProgress / item.duration_ms) * 100, 100);
+  const activeTheme = accentParam ? "#" + accentParam.replace("#","") : themeColor;
 
   return (
     <div className="flex items-start justify-start min-h-screen bg-transparent p-4">
       <div
-        className="relative flex items-center gap-3 px-4 py-3 rounded-2xl overflow-hidden select-none"
+        className="relative flex items-center gap-3 px-4 py-3 overflow-hidden select-none"
         style={{
           width:"400px",
+          borderRadius: cfg.radius !== null ? cfg.radius + "px" : "16px",
           background:`linear-gradient(135deg, ${rgba(darkColor,0.97)}, ${rgba(darkColor,0.90)})`,
-          backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)",
-          border:`1px solid ${rgba(themeColor, isPlaying ? 0.2 : 0.08)}`,
-          boxShadow:`0 8px 32px ${rgba(darkColor,0.7)}, inset 0 1px 0 ${rgba(themeColor,0.08)}`,
+          backdropFilter:"blur(" + (cfg.blur ?? 24) + "px)", WebkitBackdropFilter:"blur(" + (cfg.blur ?? 24) + "px)",
+          border:`1px solid ${rgba(activeTheme, isPlaying ? 0.2 : 0.08)}`,
+          boxShadow:`0 8px 32px ${rgba(darkColor,0.7)}, inset 0 1px 0 ${rgba(activeTheme,0.08)}`,
           opacity: isPlaying ? 1 : 0.75,
           transition:"opacity 0.6s ease, border-color 0.6s ease",
         }}
       >
         <div className="absolute left-0 top-4 bottom-4 w-[3px] rounded-full transition-colors duration-1000"
-          style={{ backgroundColor: isPlaying ? themeColor : rgba(themeColor, 0.3) }} />
+          style={{ backgroundColor: isPlaying ? activeTheme : rgba(activeTheme, 0.3) }} />
         <div className="absolute -right-12 -top-12 w-40 h-40 rounded-full blur-3xl pointer-events-none transition-all duration-1000"
-          style={{ backgroundColor: themeColor, opacity: isPlaying ? 0.2 : 0.06 }} />
+          style={{ backgroundColor: activeTheme, opacity: isPlaying ? 0.2 : 0.06 }} />
 
         {showAlbumArt && (
           <div className="relative shrink-0 w-[68px] h-[68px] rounded-xl overflow-hidden ml-2"
@@ -117,24 +122,24 @@ export default function NowPlayingBar() {
 
         <div className="flex flex-col gap-0.5 flex-1 min-w-0 pr-1">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <EqualizerBars isPlaying={isPlaying} color={themeColor} />
+            {cfg.visualizer ? <EqualizerBars isPlaying={isPlaying} color={activeTheme} /> : null}
             <span className="text-[9px] font-black tracking-[0.2em] uppercase transition-colors duration-1000"
-              style={{ color: isPlaying ? themeColor : rgba(themeColor, 0.5) }}>
+              style={{ color: isPlaying ? activeTheme : rgba(activeTheme, 0.5) }}>
               {isPlaying ? "Now Playing" : "Paused"}
             </span>
           </div>
           <h1 className="text-white text-[13px] font-black truncate leading-tight tracking-tight">{item.name}</h1>
           <div className="flex items-center gap-1 min-w-0">
             <span className="text-[11px] font-semibold truncate transition-colors duration-1000"
-              style={{ color: isPlaying ? themeColor : rgba(themeColor, 0.5) }}>{artists}</span>
+              style={{ color: isPlaying ? activeTheme : rgba(activeTheme, 0.5) }}>{artists}</span>
             <span className="text-white/25 text-[11px] shrink-0">•</span>
             <span className="text-white/40 text-[11px] truncate">{item.album.name}</span>
           </div>
           <div className="mt-2 flex flex-col gap-1">
             <div className="w-full bg-white/10 rounded-full h-[3px] overflow-hidden">
               <div className="h-full rounded-full"
-                style={{ width:`${pct}%`, backgroundColor: isPlaying ? themeColor : rgba(themeColor,0.4),
-                  boxShadow: isPlaying ? `0 0 6px ${rgba(themeColor,0.7)}` : "none",
+                style={{ width:`${pct}%`, backgroundColor: isPlaying ? activeTheme : rgba(activeTheme,0.4),
+                  boxShadow: isPlaying ? `0 0 6px ${rgba(activeTheme,0.7)}` : "none",
                   transition:"width 100ms linear" }} />
             </div>
             <div className="flex justify-between">

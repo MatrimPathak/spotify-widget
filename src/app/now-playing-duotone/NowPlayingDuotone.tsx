@@ -2,11 +2,13 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useNowPlaying } from "@/app/lib/useNowPlaying";
+import { useWidgetConfig } from "@/app/lib/useWidgetConfig";
 
 export default function NowPlayingDuotone() {
   const searchParams = useSearchParams();
   const hidePaused = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const { trackData, localProgress, themeColor, darkColor, fmt, rgba } = useNowPlaying();
+  const cfg = useWidgetConfig();
 
   if (!trackData?.item) return <div />;
   if (!trackData.is_playing && hidePaused) return <div />;
@@ -19,7 +21,7 @@ export default function NowPlayingDuotone() {
     <div className="flex items-start justify-start min-h-screen bg-transparent p-4">
       <div className="relative flex items-center gap-4 px-5 py-4 overflow-hidden select-none transition-all duration-700"
         style={{
-          width:"400px", borderRadius:"20px",
+          width:"400px", borderRadius: cfg.radius !== null ? cfg.radius + "px" : "20px",
           background:`linear-gradient(125deg, ${rgba(darkColor,0.98)} 0%, #0d0d0d 100%)`,
           border:`1px solid ${rgba(themeColor, isPlaying ? 0.15 : 0.05)}`,
           boxShadow:`0 12px 48px ${rgba(darkColor,0.8)}, inset 0 1px 0 ${rgba(themeColor,0.06)}`,

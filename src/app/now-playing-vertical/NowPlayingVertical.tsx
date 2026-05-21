@@ -2,11 +2,13 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useNowPlaying } from "@/app/lib/useNowPlaying";
+import { useWidgetConfig } from "@/app/lib/useWidgetConfig";
 
 export default function NowPlayingVertical() {
   const searchParams = useSearchParams();
   const hidePaused = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const { trackData, localProgress, themeColor, darkColor, fmt, rgba } = useNowPlaying();
+  const cfg = useWidgetConfig();
 
   if (!trackData?.item) return <div />;
   if (!trackData.is_playing && hidePaused) return <div />;
@@ -24,7 +26,7 @@ export default function NowPlayingVertical() {
     <div className="flex items-start justify-start min-h-screen bg-transparent p-4">
       <div className="relative flex flex-col overflow-hidden select-none transition-opacity duration-700"
         style={{
-          width:"210px", borderRadius:"20px",
+          width:"210px", borderRadius: cfg.radius !== null ? cfg.radius + "px" : "20px",
           background:`linear-gradient(180deg, ${rgba(darkColor,0.96)} 0%, #0d0d0d 100%)`,
           border:`1px solid ${rgba(themeColor, isPlaying ? 0.2 : 0.06)}`,
           boxShadow:`0 16px 48px ${rgba(darkColor,0.8)}`,
@@ -75,6 +77,7 @@ export default function NowPlayingVertical() {
         </div>
 
         {/* Equalizer — flat when paused */}
+        {cfg.visualizer && (
         <div className="flex items-end justify-center gap-[3px] pb-3 px-4 h-8">
           {eqAnims.map((bar,i) => (
             <div key={i} style={{
@@ -87,6 +90,7 @@ export default function NowPlayingVertical() {
             }} />
           ))}
         </div>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { Vibrant } from "node-vibrant/browser";
 
 export interface Track {
@@ -15,6 +16,7 @@ export interface NowPlayingData {
 }
 
 export function useNowPlaying() {
+  const searchParams = useSearchParams();
   const [trackData, setTrackData] = useState<NowPlayingData | null>(null);
   const [localProgress, setLocalProgress] = useState(0);
   const [themeColor, setThemeColor] = useState("#1db954");
@@ -71,5 +73,8 @@ export function useNowPlaying() {
     return `rgba(${parseInt(hex.slice(0, 2), 16)},${parseInt(hex.slice(2, 4), 16)},${parseInt(hex.slice(4, 6), 16)},${a})`;
   };
 
-  return { trackData, localProgress, themeColor, darkColor, fmt, rgba };
+  const accentParam = searchParams.get("accentColor");
+  const effectiveTheme = accentParam ? "#" + accentParam.replace("#", "") : themeColor;
+
+  return { trackData, localProgress, themeColor: effectiveTheme, darkColor, fmt, rgba };
 }

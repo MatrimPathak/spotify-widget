@@ -2,11 +2,13 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useNowPlaying } from "@/app/lib/useNowPlaying";
+import { useWidgetConfig } from "@/app/lib/useWidgetConfig";
 
 export default function NowPlayingAura() {
   const searchParams = useSearchParams();
   const hidePaused = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const { trackData, localProgress, themeColor, darkColor, fmt, rgba } = useNowPlaying();
+  const cfg = useWidgetConfig();
 
   if (!trackData?.item) return <div />;
   if (!trackData.is_playing && hidePaused) return <div />;
@@ -32,9 +34,10 @@ export default function NowPlayingAura() {
       <div className="relative z-10 m-6 flex items-center gap-3 px-4 py-3 rounded-2xl overflow-hidden transition-all duration-700"
         style={{
           background: rgba(darkColor, isPlaying ? 0.6 : 0.75),
-          backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)",
+          backdropFilter:"blur(" + (cfg.blur ?? 24) + "px)", WebkitBackdropFilter:"blur(" + (cfg.blur ?? 24) + "px)",
           border:`1px solid ${rgba(themeColor, isPlaying ? 0.25 : 0.08)}`,
           boxShadow:`0 8px 32px rgba(0,0,0,0.4)`,
+          borderRadius: cfg.radius !== null ? cfg.radius + "px" : "16px",
           maxWidth:"340px",
         }}
       >
@@ -48,14 +51,14 @@ export default function NowPlayingAura() {
 
         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            {[0.7,0.9,0.8,0.65].map((dur,i) => (
+            {cfg.visualizer ? ([0.7,0.9,0.8,0.65].map((dur,i) => (
               <div key={i} style={{
                 width:"2px", borderRadius:"1px",
                 backgroundColor: isPlaying ? themeColor : rgba(themeColor,0.3),
                 height: isPlaying ? undefined : "2px",
                 animation: isPlaying ? `eq${i+1} ${dur}s ease-in-out infinite alternate` : "none",
               }} />
-            ))}
+            ))) : null}
             <span className="text-[9px] font-black tracking-[0.18em] uppercase ml-0.5 transition-colors duration-700"
               style={{ color: isPlaying ? themeColor : rgba(themeColor,0.4) }}>
               {isPlaying ? "Now Playing" : "Paused"}
