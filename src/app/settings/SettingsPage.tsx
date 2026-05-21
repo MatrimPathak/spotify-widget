@@ -219,6 +219,35 @@ export default function SettingsPage() {
               )}
             </Group>
 
+            {/* Custom widget teaser */}
+            <div className="rounded-xl p-4 relative overflow-hidden"
+              style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)" }}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-bold">Custom Widget Builder</span>
+                    <span className="text-[9px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded-full"
+                      style={{ background:"rgba(29,185,84,0.15)", color:"#1db954", border:"1px solid rgba(29,185,84,0.3)" }}>
+                      Soon
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/35 leading-relaxed">
+                    Design your own widget from scratch — pick layout, fonts, colors, and animations without writing code.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {["Layout editor","Font picker","Custom CSS","Animation presets","Export to OBS"].map(tag => (
+                      <span key={tag} className="text-[9px] text-white/25 px-2 py-0.5 rounded-full"
+                        style={{ border:"1px solid rgba(255,255,255,0.08)" }}>{tag}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+                  style={{ background:"rgba(29,185,84,0.08)", border:"1px solid rgba(29,185,84,0.15)" }}>
+                  🎨
+                </div>
+              </div>
+            </div>
+
             {/* OBS info */}
             <Group label="OBS Browser Source">
               <div className="rounded-lg p-3 text-xs text-white/50 flex flex-col gap-1"
