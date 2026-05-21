@@ -72,7 +72,7 @@ export default function NowPlayingTurntable() {
         {/* Info panel */}
         <div className="w-full mt-3 px-4 py-3 rounded-2xl flex flex-col gap-1 transition-all duration-700"
           style={{
-            background: rgba(darkColor, 0.9), backdropFilter:"blur(" + (cfg.blur ?? 12) + "px)", WebkitBackdropFilter:"blur(" + (cfg.blur ?? 12) + "px)",
+            background: rgba(darkColor, cfg.bgOpacity ?? 0.9), backdropFilter:"blur(" + (cfg.blur ?? 12) + "px)", WebkitBackdropFilter:"blur(" + (cfg.blur ?? 12) + "px)",
             border:`1px solid ${rgba(themeColor, isPlaying ? 0.2 : 0.07)}`,
             opacity: isPlaying ? 1 : 0.65,
           }}

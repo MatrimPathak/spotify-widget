@@ -22,7 +22,7 @@ export default function NowPlayingDuotone() {
       <div className="relative flex items-center gap-4 px-5 py-4 overflow-hidden select-none transition-all duration-700"
         style={{
           width:"400px", borderRadius: cfg.radius !== null ? cfg.radius + "px" : "20px",
-          background:`linear-gradient(125deg, ${rgba(darkColor,0.98)} 0%, #0d0d0d 100%)`,
+          background:`linear-gradient(125deg, ${rgba(darkColor, cfg.bgOpacity ?? 0.98)} 0%, #0d0d0d 100%)`,
           border:`1px solid ${rgba(themeColor, isPlaying ? 0.15 : 0.05)}`,
           boxShadow:`0 12px 48px ${rgba(darkColor,0.8)}, inset 0 1px 0 ${rgba(themeColor,0.06)}`,
           opacity: isPlaying ? 1 : 0.65,

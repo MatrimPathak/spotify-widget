@@ -54,7 +54,7 @@ export default function NowPlayingSplit() {
 
         {/* Right: dark info panel */}
         <div className="flex-1 flex flex-col justify-center px-4 gap-1"
-          style={{ background: rgba(darkColor, 0.97) }}>
+          style={{ background: rgba(darkColor, cfg.bgOpacity ?? 0.97) }}>
           <span className="text-[9px] font-black tracking-[0.2em] uppercase transition-colors duration-700"
             style={{ color: isPlaying ? themeColor : rgba(themeColor, 0.35) }}>
             {isPlaying ? "Now Playing" : "Paused"}

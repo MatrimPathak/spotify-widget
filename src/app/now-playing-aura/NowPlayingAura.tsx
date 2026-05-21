@@ -33,7 +33,7 @@ export default function NowPlayingAura() {
       {/* Frosted pill */}
       <div className="relative z-10 m-6 flex items-center gap-3 px-4 py-3 rounded-2xl overflow-hidden transition-all duration-700"
         style={{
-          background: rgba(darkColor, isPlaying ? 0.6 : 0.75),
+          background: rgba(darkColor, isPlaying ? (cfg.bgOpacity ?? 0.6) : (cfg.bgOpacity ?? 0.75)),
           backdropFilter:"blur(" + (cfg.blur ?? 24) + "px)", WebkitBackdropFilter:"blur(" + (cfg.blur ?? 24) + "px)",
           border:`1px solid ${rgba(themeColor, isPlaying ? 0.25 : 0.08)}`,
           boxShadow:`0 8px 32px rgba(0,0,0,0.4)`,
