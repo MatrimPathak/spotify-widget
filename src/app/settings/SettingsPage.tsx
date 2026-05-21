@@ -1,5 +1,6 @@
 "use client";
 import { useState, useCallback, type ReactNode } from "react";
+import Link from "next/link";
 
 const WIDGETS = [
   { id: "now-playing",              name: "Horizontal Bar",    desc: "Sleek pill with album art",        w: 432, h: 96,  category: "normal",   supports: ["hidePaused","hideAlbumArt","radius","blur","visualizer","accentColor"] },
@@ -114,7 +115,7 @@ export default function SettingsPage() {
           <h1 className="text-xl font-bold tracking-tight">Spotify Widget</h1>
           <p className="text-xs text-white/40 mt-0.5">OBS Configuration</p>
         </div>
-        <a href="/" className="text-xs text-white/30 hover:text-white/60 transition-colors">← Home</a>
+        <Link href="/" className="text-xs text-white/30 hover:text-white/60 transition-colors">← Home</Link>
       </header>
 
       <div className="flex h-[calc(100vh-65px)]">
