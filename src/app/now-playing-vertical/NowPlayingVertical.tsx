@@ -27,7 +27,7 @@ export default function NowPlayingVertical() {
       <div className="relative flex flex-col overflow-hidden select-none transition-opacity duration-700"
         style={{
           width:"210px", borderRadius: cfg.radius !== null ? cfg.radius + "px" : "20px",
-          background:`linear-gradient(180deg, ${rgba(darkColor,0.96)} 0%, #0d0d0d 100%)`,
+          background:`linear-gradient(180deg, ${rgba(darkColor, cfg.bgOpacity ?? 0.96)} 0%, #0d0d0d 100%)`,
           border:`1px solid ${rgba(themeColor, isPlaying ? 0.2 : 0.06)}`,
           boxShadow:`0 16px 48px ${rgba(darkColor,0.8)}`,
           opacity: isPlaying ? 1 : 0.65,

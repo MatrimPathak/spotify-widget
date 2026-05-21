@@ -35,6 +35,7 @@ export default function NowPlayingCard() {
   const searchParams = useSearchParams();
   const hidePaused  = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const accentParam = searchParams.get("accentColor");
+  const isDemo      = searchParams.get("demo") === "true";
   const cfg = useWidgetConfig();
 
   const [trackData, setTrackData]         = useState<NowPlayingResponse | null>(null);
@@ -45,9 +46,10 @@ export default function NowPlayingCard() {
   const isPlayingRef   = useRef(false);
 
   useEffect(() => {
+    const ep = isDemo ? "/api/now-playing?demo=true" : "/api/now-playing";
     const load = async () => {
       try {
-        const res = await fetch("/api/now-playing");
+        const res = await fetch(ep);
         if (!res.ok) return;
         const data: NowPlayingResponse = await res.json();
         if (data.error) return;
@@ -56,7 +58,8 @@ export default function NowPlayingCard() {
         isPlayingRef.current = data.is_playing;
       } catch {}
     };
-    load(); const iv = setInterval(load, 4000); return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    load(); const iv = setInterval(load, isDemo ? 60000 : 4000); return () => clearInterval(iv);
   }, []);
 
   useEffect(() => {

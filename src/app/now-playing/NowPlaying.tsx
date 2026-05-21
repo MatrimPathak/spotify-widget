@@ -36,6 +36,7 @@ export default function NowPlayingBar() {
   const showAlbumArt = searchParams.get("hideAlbumArt")?.toLowerCase() !== "true";
   const hidePaused   = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const accentParam  = searchParams.get("accentColor");
+  const isDemo       = searchParams.get("demo") === "true";
   const cfg = useWidgetConfig();
 
   const [trackData, setTrackData]   = useState<NowPlayingResponse | null>(null);
@@ -46,9 +47,10 @@ export default function NowPlayingBar() {
   const isPlayingRef   = useRef(false);
 
   useEffect(() => {
+    const ep = isDemo ? "/api/now-playing?demo=true" : "/api/now-playing";
     const load = async () => {
       try {
-        const res = await fetch("/api/now-playing");
+        const res = await fetch(ep);
         if (!res.ok) return;
         const data: NowPlayingResponse = await res.json();
         if (data.error) return;
@@ -57,7 +59,8 @@ export default function NowPlayingBar() {
         isPlayingRef.current = data.is_playing;
       } catch {}
     };
-    load(); const iv = setInterval(load, 4000); return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    load(); const iv = setInterval(load, isDemo ? 60000 : 4000); return () => clearInterval(iv);
   }, []);
 
   useEffect(() => {
@@ -92,7 +95,7 @@ export default function NowPlayingBar() {
         style={{
           width:"400px",
           borderRadius: cfg.radius !== null ? cfg.radius + "px" : "16px",
-          background:`linear-gradient(135deg, ${rgba(darkColor,0.97)}, ${rgba(darkColor,0.90)})`,
+          background:`linear-gradient(135deg, ${rgba(darkColor, cfg.bgOpacity ?? 0.97)}, ${rgba(darkColor, cfg.bgOpacity ?? 0.90)})`,
           backdropFilter:"blur(" + (cfg.blur ?? 24) + "px)", WebkitBackdropFilter:"blur(" + (cfg.blur ?? 24) + "px)",
           border:`1px solid ${rgba(activeTheme, isPlaying ? 0.2 : 0.08)}`,
           boxShadow:`0 8px 32px ${rgba(darkColor,0.7)}, inset 0 1px 0 ${rgba(activeTheme,0.08)}`,

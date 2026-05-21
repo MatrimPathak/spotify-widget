@@ -24,10 +24,13 @@ export function useNowPlaying() {
   const lastTrackIdRef = useRef<string | null>(null);
   const isPlayingRef = useRef(false);
 
+  const isDemo = searchParams.get("demo") === "true";
+
   useEffect(() => {
+    const endpoint = isDemo ? "/api/now-playing?demo=true" : "/api/now-playing";
     const load = async () => {
       try {
-        const res = await fetch("/api/now-playing");
+        const res = await fetch(endpoint);
         if (!res.ok) return;
         const data: NowPlayingData & { error?: string } = await res.json();
         if (data.error) return;
@@ -37,8 +40,9 @@ export function useNowPlaying() {
       } catch {}
     };
     load();
-    const iv = setInterval(load, 4000);
+    const iv = setInterval(load, isDemo ? 60000 : 4000);
     return () => clearInterval(iv);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

@@ -22,7 +22,7 @@ export default function NowPlayingNotification() {
       <div className="relative select-none overflow-hidden transition-all duration-700"
         style={{
           width:"320px", borderRadius: cfg.radius !== null ? cfg.radius + "px" : "20px",
-          background: rgba(darkColor, 0.92),
+          background: rgba(darkColor, cfg.bgOpacity ?? 0.92),
           backdropFilter:"blur(" + (cfg.blur ?? 40) + "px)", WebkitBackdropFilter:"blur(" + (cfg.blur ?? 40) + "px)",
           border:`1px solid ${isPlaying ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)"}`,
           boxShadow:"0 12px 40px rgba(0,0,0,0.5)",
