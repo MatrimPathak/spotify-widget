@@ -1,11 +1,13 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { useNowPlaying } from "@/app/lib/useNowPlaying";
+import { useWidgetConfig } from "@/app/lib/useWidgetConfig";
 
 export default function NowPlayingTicker() {
   const searchParams = useSearchParams();
   const hidePaused = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const { trackData, localProgress, themeColor, fmt, rgba } = useNowPlaying();
+  const cfg = useWidgetConfig();
 
   if (!trackData?.item) return <div />;
   if (!trackData.is_playing && hidePaused) return <div />;
@@ -18,7 +20,7 @@ export default function NowPlayingTicker() {
     <div className="flex items-start justify-start min-h-screen bg-transparent p-4">
       <div className="relative overflow-hidden select-none transition-all duration-700"
         style={{
-          width:"520px", height:"38px", borderRadius:"6px",
+          width:"520px", height:"38px", borderRadius: cfg.radius !== null ? cfg.radius + "px" : "6px",
           background:"rgba(10,10,10,0.92)",
           border:`1px solid ${rgba(themeColor, isPlaying ? 0.3 : 0.1)}`,
           boxShadow:`0 4px 20px rgba(0,0,0,0.5)`,

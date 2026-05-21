@@ -2,11 +2,13 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useNowPlaying } from "@/app/lib/useNowPlaying";
+import { useWidgetConfig } from "@/app/lib/useWidgetConfig";
 
 export default function NowPlayingPolaroid() {
   const searchParams = useSearchParams();
   const hidePaused = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const { trackData, localProgress, themeColor, fmt, rgba } = useNowPlaying();
+  const cfg = useWidgetConfig();
 
   if (!trackData?.item) return <div />;
   if (!trackData.is_playing && hidePaused) return <div />;
@@ -35,14 +37,20 @@ export default function NowPlayingPolaroid() {
 
             {/* Playing: equalizer badge. Paused: large ⏸ sticker in corner */}
             {isPlaying ? (
-              <div className="absolute top-2 right-2 flex items-end gap-[2px] h-4 px-1.5 py-1 rounded-full bg-black/40">
-                {[0.7,0.9,0.8,0.65].map((dur,i) => (
-                  <div key={i} style={{
-                    width:"2px", borderRadius:"1px", backgroundColor:"#fff",
-                    animation:`eq${i+1} ${dur}s ease-in-out infinite alternate`,
-                  }} />
-                ))}
-              </div>
+              cfg.visualizer ? (
+                <div className="absolute top-2 right-2 flex items-end gap-[2px] h-4 px-1.5 py-1 rounded-full bg-black/40">
+                  {[0.7,0.9,0.8,0.65].map((dur,i) => (
+                    <div key={i} style={{
+                      width:"2px", borderRadius:"1px", backgroundColor:"#fff",
+                      animation:`eq${i+1} ${dur}s ease-in-out infinite alternate`,
+                    }} />
+                  ))}
+                </div>
+              ) : (
+                <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-white/80" />
+                </div>
+              )
             ) : (
               // Paused: a small sticky-note style badge
               <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow-md">

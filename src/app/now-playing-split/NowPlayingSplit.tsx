@@ -2,11 +2,13 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useNowPlaying } from "@/app/lib/useNowPlaying";
+import { useWidgetConfig } from "@/app/lib/useWidgetConfig";
 
 export default function NowPlayingSplit() {
   const searchParams = useSearchParams();
   const hidePaused = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const { trackData, localProgress, themeColor, darkColor, fmt, rgba } = useNowPlaying();
+  const cfg = useWidgetConfig();
 
   if (!trackData?.item) return <div />;
   if (!trackData.is_playing && hidePaused) return <div />;
@@ -19,7 +21,7 @@ export default function NowPlayingSplit() {
     <div className="flex items-start justify-start min-h-screen bg-transparent p-4">
       <div className="relative flex overflow-hidden select-none transition-opacity duration-700"
         style={{
-          width:"400px", height:"120px", borderRadius:"18px",
+          width:"400px", height:"120px", borderRadius: cfg.radius !== null ? cfg.radius + "px" : "18px",
           boxShadow:`0 12px 40px rgba(0,0,0,0.6)`,
           border:`1px solid rgba(255,255,255,0.06)`,
           opacity: isPlaying ? 1 : 0.7,

@@ -2,11 +2,13 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useNowPlaying } from "@/app/lib/useNowPlaying";
+import { useWidgetConfig } from "@/app/lib/useWidgetConfig";
 
 export default function NowPlayingCentered() {
   const searchParams = useSearchParams();
   const hidePaused = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const { trackData, localProgress, themeColor, fmt, rgba } = useNowPlaying();
+  const cfg = useWidgetConfig();
 
   if (!trackData?.item) return <div />;
   if (!trackData.is_playing && hidePaused) return <div />;
@@ -21,6 +23,7 @@ export default function NowPlayingCentered() {
         {/* Album art */}
         <div className="relative w-[180px] h-[180px] rounded-2xl overflow-hidden mb-4 transition-all duration-700"
           style={{
+            borderRadius: cfg.radius !== null ? cfg.radius + "px" : "16px",
             boxShadow:`0 20px 60px ${rgba(themeColor, isPlaying ? 0.35 : 0.1)}, 0 8px 20px rgba(0,0,0,0.5)`,
             border:`1px solid ${rgba(themeColor, isPlaying ? 0.2 : 0.06)}`,
             filter: isPlaying ? "none" : "saturate(0.25)",

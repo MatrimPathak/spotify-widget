@@ -2,11 +2,13 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useNowPlaying } from "@/app/lib/useNowPlaying";
+import { useWidgetConfig } from "@/app/lib/useWidgetConfig";
 
 export default function NowPlayingNeon() {
   const searchParams = useSearchParams();
   const hidePaused = searchParams.get("hidePaused")?.toLowerCase() === "true";
   const { trackData, localProgress, themeColor, fmt, rgba } = useNowPlaying();
+  const cfg = useWidgetConfig();
 
   if (!trackData?.item) return <div />;
   if (!trackData.is_playing && hidePaused) return <div />;
@@ -23,7 +25,7 @@ export default function NowPlayingNeon() {
     <div className="flex items-start justify-start min-h-screen bg-transparent p-4">
       <div className="relative flex items-center gap-4 px-4 py-3 overflow-hidden select-none transition-all duration-700"
         style={{
-          width:"400px", borderRadius:"8px", background:"#050505",
+          width:"400px", borderRadius: cfg.radius !== null ? cfg.radius + "px" : "8px", background:"#050505",
           border:`1px solid ${rgba(themeColor, borderAlpha)}`,
           boxShadow: neonGlow,
         }}
