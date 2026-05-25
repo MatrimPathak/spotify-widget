@@ -33,6 +33,10 @@ export function useNowPlaying() {
         const res = await fetch(endpoint);
         if (!res.ok) return;
         const data: NowPlayingData & { error?: string } = await res.json();
+        if (data.error === "auth_expired") {
+          window.location.href = "/login";
+          return;
+        }
         if (data.error) return;
         setTrackData(data);
         if (typeof data.progress_ms === "number") setLocalProgress(data.progress_ms);

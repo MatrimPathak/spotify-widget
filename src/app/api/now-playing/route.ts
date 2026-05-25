@@ -1,6 +1,7 @@
 // src/app/api/now-playing/route.ts
 import { NextResponse } from "next/server";
 import spotifyApi from "@/app/lib/spotify";
+import { saveTokens } from "@/app/lib/tokenStore";
 
 const DEMO_DATA = {
   item: {
@@ -33,6 +34,10 @@ export async function GET(req: Request) {
       try {
         const refreshed = await spotifyApi.refreshAccessToken();
         spotifyApi.setAccessToken(refreshed.body.access_token);
+        saveTokens({
+          access_token: refreshed.body.access_token,
+          ...(refreshed.body.refresh_token ? { refresh_token: refreshed.body.refresh_token } : {}),
+        });
         const retryData = await spotifyApi.getMyCurrentPlayingTrack();
         return NextResponse.json(retryData.body);
       } catch {

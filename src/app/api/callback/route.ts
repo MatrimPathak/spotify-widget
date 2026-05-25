@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import spotifyApi from "@/app/lib/spotify";
+import { saveTokens } from "@/app/lib/tokenStore";
 export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
 	const code = searchParams.get("code");
@@ -36,6 +37,15 @@ export async function GET(request: Request) {
 		// Set tokens on the shared Spotify API client
 		spotifyApi.setAccessToken(access_token);
 		spotifyApi.setRefreshToken(refresh_token);
+
+		// Persist all credentials and tokens so they survive server restarts
+		saveTokens({
+			client_id: clientId,
+			client_secret: clientSecret,
+			redirect_uri: redirectUri,
+			access_token,
+			refresh_token,
+		});
 
 		// Redirect to /now-playing:
 		return NextResponse.redirect(new URL("/now-playing", request.url));
