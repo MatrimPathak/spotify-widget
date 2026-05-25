@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, type ReactNode } from "react";
+import { useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
 
 const WIDGETS = [
@@ -68,6 +68,19 @@ export default function SettingsPage() {
   const [bgOpacity,     setBgOpacity]    = useState(85);
   const [visualizer,    setVisualizer]   = useState(true);
   const [copied,        setCopied]       = useState(false);
+  const [containerSize, setContainerSize] = useState({ w: 700, h: 500 });
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = previewContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setContainerSize({ w: width, h: height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const has = (f: string) => selected.supports.includes(f);
 
@@ -110,10 +123,13 @@ export default function SettingsPage() {
 
   const visible = WIDGETS.filter(w => filter === "all" || w.category === filter);
 
-  const PAD   = 32;
-  const MAX_W = 300;
-  const MAX_H = 440;
-  const scale = Math.min(MAX_W / (selected.w + PAD), MAX_H / (selected.h + PAD), 1);
+  const PAD    = 32;
+  const INSET  = 32; // p-4 on each side
+  const scale  = Math.min(
+    (containerSize.w - INSET) / (selected.w + PAD),
+    (containerSize.h - INSET) / (selected.h + PAD),
+    1,
+  );
   const previewW = Math.round((selected.w + PAD) * scale);
   const previewH = Math.round((selected.h + PAD) * scale);
 
@@ -306,7 +322,7 @@ export default function SettingsPage() {
                 className="text-xs text-white/30 hover:text-white/60 transition-colors">Open full size ↗</a>
             </div>
 
-            <div className="rounded-xl overflow-hidden flex items-start justify-center p-4 flex-1"
+            <div ref={previewContainerRef} className="rounded-xl overflow-hidden flex items-center justify-center p-4 flex-1"
               style={{ background:"repeating-conic-gradient(rgba(255,255,255,0.03) 0% 25%, transparent 0% 50%) 0 0/16px 16px", minHeight:"320px" }}>
               <div className="relative overflow-hidden rounded" style={{ width:previewW, height:previewH }}>
                 <iframe key={previewUrl} src={previewUrl}
