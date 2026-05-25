@@ -47,8 +47,11 @@ export async function GET(request: Request) {
 			refresh_token,
 		});
 
-		// Redirect to /now-playing:
-		return NextResponse.redirect(new URL("/now-playing", request.url));
+		// Redirect to /now-playing and persist tokens in cookies so they survive Vercel cold starts
+		const redirectResponse = NextResponse.redirect(new URL("/now-playing", request.url));
+		redirectResponse.cookies.set("access_token", access_token, { httpOnly: true, sameSite: "lax" });
+		redirectResponse.cookies.set("refresh_token", refresh_token, { httpOnly: true, sameSite: "lax" });
+		return redirectResponse;
 	} catch (err) {
 		console.error("Error during callback:", err);
 		return NextResponse.json(

@@ -1,5 +1,6 @@
 // src/app/api/now-playing/route.ts
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import spotifyApi from "@/app/lib/spotify";
 import { saveTokens } from "@/app/lib/tokenStore";
 
@@ -24,6 +25,25 @@ export async function GET(req: Request) {
     return NextResponse.json(DEMO_DATA);
   }
 
+  // Re-hydrate the spotifyApi from cookies on every request so tokens survive
+  // Vercel serverless cold starts (the .tokens.json file is not persisted there).
+  const cookieStore = await cookies();
+  const cookieAccessToken = cookieStore.get("access_token")?.value;
+  const cookieRefreshToken = cookieStore.get("refresh_token")?.value;
+  const cookieClientId = cookieStore.get("client_id")?.value;
+  const cookieClientSecret = cookieStore.get("client_secret")?.value;
+  const cookieRedirectUri = cookieStore.get("redirect_uri")?.value;
+
+  if (cookieClientId) spotifyApi.setClientId(cookieClientId);
+  if (cookieClientSecret) spotifyApi.setClientSecret(cookieClientSecret);
+  if (cookieRedirectUri) spotifyApi.setRedirectURI(cookieRedirectUri);
+  if (cookieAccessToken) spotifyApi.setAccessToken(cookieAccessToken);
+  if (cookieRefreshToken) spotifyApi.setRefreshToken(cookieRefreshToken);
+
+  if (!cookieAccessToken && !cookieRefreshToken) {
+    return NextResponse.json({ error: "auth_expired" }, { status: 401 });
+  }
+
   try {
     const data = await spotifyApi.getMyCurrentPlayingTrack();
     return NextResponse.json(data.body);
@@ -33,13 +53,20 @@ export async function GET(req: Request) {
     if (statusCode === 401) {
       try {
         const refreshed = await spotifyApi.refreshAccessToken();
-        spotifyApi.setAccessToken(refreshed.body.access_token);
+        const newAccessToken = refreshed.body.access_token;
+        const newRefreshToken = refreshed.body.refresh_token;
+        spotifyApi.setAccessToken(newAccessToken);
         saveTokens({
-          access_token: refreshed.body.access_token,
-          ...(refreshed.body.refresh_token ? { refresh_token: refreshed.body.refresh_token } : {}),
+          access_token: newAccessToken,
+          ...(newRefreshToken ? { refresh_token: newRefreshToken } : {}),
         });
         const retryData = await spotifyApi.getMyCurrentPlayingTrack();
-        return NextResponse.json(retryData.body);
+        const response = NextResponse.json(retryData.body);
+        response.cookies.set("access_token", newAccessToken, { httpOnly: true, sameSite: "lax" });
+        if (newRefreshToken) {
+          response.cookies.set("refresh_token", newRefreshToken, { httpOnly: true, sameSite: "lax" });
+        }
+        return response;
       } catch {
         return NextResponse.json({ error: "auth_expired" }, { status: 401 });
       }
