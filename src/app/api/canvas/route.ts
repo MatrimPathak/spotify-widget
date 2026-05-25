@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import spotifyApi from "@/app/lib/spotify";
+import { saveTokens } from "@/app/lib/tokenStore";
 
 function encodeVarint(n: number): number[] {
   const out: number[] = [];
@@ -55,6 +56,10 @@ export async function GET(req: Request) {
     if (!token) {
       const refreshed = await spotifyApi.refreshAccessToken();
       spotifyApi.setAccessToken(refreshed.body.access_token);
+      saveTokens({
+        access_token: refreshed.body.access_token,
+        ...(refreshed.body.refresh_token ? { refresh_token: refreshed.body.refresh_token } : {}),
+      });
       token = refreshed.body.access_token;
     }
 
@@ -64,6 +69,10 @@ export async function GET(req: Request) {
     // Retry once with a fresh token
     const refreshed = await spotifyApi.refreshAccessToken();
     spotifyApi.setAccessToken(refreshed.body.access_token);
+    saveTokens({
+      access_token: refreshed.body.access_token,
+      ...(refreshed.body.refresh_token ? { refresh_token: refreshed.body.refresh_token } : {}),
+    });
     const url2 = await fetchWithToken(trackId, refreshed.body.access_token);
     return NextResponse.json({ url: url2 });
   } catch {

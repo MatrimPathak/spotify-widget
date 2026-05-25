@@ -53,6 +53,7 @@ export default function NowPlayingBar() {
         const res = await fetch(ep);
         if (!res.ok) return;
         const data: NowPlayingResponse = await res.json();
+        if (data.error === "auth_expired") { window.location.href = "/login"; return; }
         if (data.error) return;
         setTrackData(data);
         if (typeof data.progress_ms === "number") setLocalProgress(data.progress_ms);
