@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import spotifyApi from "@/app/lib/spotify";
-import { saveTokens } from "@/app/lib/tokenStore";
+import { resolveCreds, makeClient, refreshClient } from "@/app/lib/widgetAuth";
 
 function encodeVarint(n: number): number[] {
   const out: number[] = [];
@@ -51,29 +50,20 @@ export async function GET(req: Request) {
     return NextResponse.json({ url: null });
   }
 
-  try {
-    let token = spotifyApi.getAccessToken();
-    if (!token) {
-      const refreshed = await spotifyApi.refreshAccessToken();
-      spotifyApi.setAccessToken(refreshed.body.access_token);
-      saveTokens({
-        access_token: refreshed.body.access_token,
-        ...(refreshed.body.refresh_token ? { refresh_token: refreshed.body.refresh_token } : {}),
-      });
-      token = refreshed.body.access_token;
-    }
+  const creds = await resolveCreds(req);
+  if (!creds) return NextResponse.json({ url: null });
+  const api = makeClient(creds);
 
-    const url = await fetchWithToken(trackId, token as string);
+  try {
+    let token = api.getAccessToken();
+    if (!token) token = (await refreshClient(api, creds)).accessToken;
+
+    const url = await fetchWithToken(trackId, token);
     if (url) return NextResponse.json({ url });
 
     // Retry once with a fresh token
-    const refreshed = await spotifyApi.refreshAccessToken();
-    spotifyApi.setAccessToken(refreshed.body.access_token);
-    saveTokens({
-      access_token: refreshed.body.access_token,
-      ...(refreshed.body.refresh_token ? { refresh_token: refreshed.body.refresh_token } : {}),
-    });
-    const url2 = await fetchWithToken(trackId, refreshed.body.access_token);
+    const { accessToken } = await refreshClient(api, creds);
+    const url2 = await fetchWithToken(trackId, accessToken);
     return NextResponse.json({ url: url2 });
   } catch {
     return NextResponse.json({ url: null });
