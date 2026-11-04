@@ -20,6 +20,13 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Using the widget in OBS
+
+OBS browser sources have their own cookie jar, so they can't see the login you did in your normal browser. Always copy the widget URL from the **Settings** page after logging in: it includes a `key` parameter holding your encrypted Spotify credentials, which the widget uses instead of cookies.
+
+- Treat that URL as private — anyone with it can read your playback.
+- Set `WIDGET_KEY_SECRET` (any long random string) in your deployment environment so the key is properly encrypted. Changing it invalidates existing OBS URLs.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

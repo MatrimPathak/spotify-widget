@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { apiUrl } from "@/app/lib/apiUrl";
 import { useSearchParams } from "next/navigation";
 import { Vibrant } from "node-vibrant/browser";
 import Image from "next/image";
@@ -50,7 +51,7 @@ export default function NowPlayingBar() {
     const ep = isDemo ? "/api/now-playing?demo=true" : "/api/now-playing";
     const load = async () => {
       try {
-        const res = await fetch(ep);
+        const res = await fetch(apiUrl(ep));
         if (!res.ok) return;
         const data: NowPlayingResponse = await res.json();
         if (data.error === "auth_expired") { window.location.href = "/login"; return; }

@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { apiUrl } from "@/app/lib/apiUrl";
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useNowPlaying } from "@/app/lib/useNowPlaying";
@@ -20,7 +21,7 @@ export default function NowPlayingCanvas() {
     if (!id || id === lastFetchedId.current) return;
     lastFetchedId.current = id;
     setCanvasUrl(null);
-    fetch(`/api/canvas?trackId=${id}`)
+    fetch(apiUrl(`/api/canvas?trackId=${id}`))
       .then(r => r.json())
       .then(d => { if (d.url) setCanvasUrl(d.url); })
       .catch(() => {});

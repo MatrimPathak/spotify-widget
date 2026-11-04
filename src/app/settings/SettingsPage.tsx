@@ -68,6 +68,7 @@ export default function SettingsPage() {
   const [bgOpacity,     setBgOpacity]    = useState(85);
   const [visualizer,    setVisualizer]   = useState(true);
   const [copied,        setCopied]       = useState(false);
+  const [widgetKey,     setWidgetKey]    = useState<string | null>(null);
   const [containerSize, setContainerSize] = useState({ w: 700, h: 500 });
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
@@ -80,6 +81,15 @@ export default function SettingsPage() {
     });
     ro.observe(el);
     return () => ro.disconnect();
+  }, []);
+
+  // Fetch an auth key to embed in the OBS URL — OBS's browser source has its
+  // own cookie jar, so it can't use the login cookies from this browser.
+  useEffect(() => {
+    fetch("/api/widget-key", { cache: "no-store" })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (d?.key) setWidgetKey(d.key); })
+      .catch(() => {});
   }, []);
 
   const has = (f: string) => selected.supports.includes(f);
@@ -97,10 +107,11 @@ export default function SettingsPage() {
     if (useBlur      && has("blur"))                      params.set("blur",        blur.toString());
     if (useBgOpacity && has("bgOpacity"))                 params.set("bgOpacity",   bgOpacity.toString());
     if (!visualizer  && has("visualizer"))                params.set("visualizer",  "false");
+    if (!demo && widgetKey)                               params.set("key",         widgetKey);
     const qs = params.toString();
     return `${base}/${selected.id}${qs ? `?${qs}` : ""}`;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, hidePaused, hideAlbumArt, canvasMode, useAccent, accentColor, useRadius, radius, useBlur, blur, useBgOpacity, bgOpacity, visualizer]);
+  }, [widgetKey, selected, hidePaused, hideAlbumArt, canvasMode, useAccent, accentColor, useRadius, radius, useBlur, blur, useBgOpacity, bgOpacity, visualizer]);
 
   const obsUrl     = buildUrl(false);
   const previewUrl = buildUrl(true);
@@ -308,6 +319,11 @@ export default function SettingsPage() {
                   color:      copied ? "#1db954" : "#000",
                   border:     copied ? "1px solid #1db954" : "1px solid transparent",
                 }}>{copied ? "Copied!" : "Copy URL"}</button>
+              <p className="text-[10px] text-white/35 leading-relaxed mt-1">
+                {widgetKey
+                  ? "This URL contains a private key that lets OBS access your Spotify playback — don't share it."
+                  : "Log in first so the URL includes the key OBS needs to read your playback."}
+              </p>
             </Group>
           </section>
 

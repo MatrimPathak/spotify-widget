@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { apiUrl } from "@/app/lib/apiUrl";
 import { useSearchParams } from "next/navigation";
 import { Vibrant } from "node-vibrant/browser";
 
@@ -30,7 +31,7 @@ export function useNowPlaying() {
     const endpoint = isDemo ? "/api/now-playing?demo=true" : "/api/now-playing";
     const load = async () => {
       try {
-        const res = await fetch(endpoint);
+        const res = await fetch(apiUrl(endpoint));
         if (!res.ok) return;
         const data: NowPlayingData & { error?: string } = await res.json();
         if (data.error === "auth_expired") {
